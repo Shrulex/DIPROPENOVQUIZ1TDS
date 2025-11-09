@@ -1,0 +1,48 @@
+name: Multi-Platform Matrix Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }} - Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [16, 18, 20]
+        # This creates 9 parallel jobs. Overkill? Absolutely. Fun? Also yes.
+        include:
+          - os: ubuntu-latest
+            node: 16
+          - os: windows-latest
+            node: 18
+          - os: macos-latest
+            node: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: matrix-a0b3d5d
+        run: echo "Building on ${{ matrix.os }} with Node ${{ matrix.node }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Generate build artifact
+        run: |
+          echo "CI build output" > artifact-${{ matrix.os }}-${{ matrix.node }}.txt
+          echo "OS: ${{ matrix.os }}" >> artifact-${{ matrix.os }}-${{ matrix.node }}.txt
+          echo "Node: ${{ matrix.node }}" >> artifact-${{ matrix.os }}-${{ matrix.node }}.txt
+          echo "Timestamp: $(date)" >> artifact-${{ matrix.os }}-${{ matrix.node }}.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-a0b3d5d-${{ matrix.os }}-node${{ matrix.node }}
+          path: artifact-${{ matrix.os }}-${{ matrix.node }}.txt
